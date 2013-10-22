@@ -44,10 +44,14 @@ module Dragonfly
     end
 
     def cache_headers
-      {
-        "Cache-Control" => "public, max-age=#{app.cache_duration}",
-        "ETag" => %("#{job.unique_signature}")
-      }
+      if (app.cache_duration.respond_to? :call)
+        app.cache_duration.call(job,env,app)
+      else
+        {
+          "Cache-Control" => "public, max-age=#{app.cache_duration}",
+          "ETag" => %("#{job.unique_signature}")
+        }
+      end
     end
 
     def etag_matches?
